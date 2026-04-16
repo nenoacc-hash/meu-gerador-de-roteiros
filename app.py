@@ -16,7 +16,7 @@ if api_key:
     try:
         genai.configure(api_key=api_key)
         # Usando o modelo mais atual e disponível
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
         # Campos de preenchimento
         tipo_negocio = st.text_input("Qual o seu negócio?", placeholder="Ex: Doceria Dona Geny")
