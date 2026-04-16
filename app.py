@@ -9,18 +9,12 @@ st.set_page_config(page_title="Geny: Roteiros Inteligentes", page_icon="🎬")
 SHEET_ID = "1uB2n6wPK8K5aC_6RUKB27M_vn2u7o9thYt1JcEZMbKI"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
 
-# Função para verificar acesso - Versão Blindada
+# Função de Acesso
 def verificar_acesso(senha_digitada):
     try:
         df = pd.read_csv(SHEET_URL)
-        # Padroniza os nomes das colunas para minúsculo
         df.columns = [str(c).strip().lower() for c in df.columns]
-        
-        # Converte a senha digitada para texto puro e limpa espaços
         senha_limpa = str(senha_digitada).strip()
-        
-        # Procura a senha na coluna 'senha'
-        # Usamos .values para evitar o erro de 'Series'
         for index, row in df.iterrows():
             if str(row['senha']).strip() == senha_limpa:
                 if str(row['status']).strip().lower() == 'ativo':
@@ -37,45 +31,57 @@ with st.sidebar:
     idioma = st.selectbox("🌐 Idioma", ["Português", "English", "Español"])
     senha_acesso = st.text_input("Senha de Acesso:", type="password")
 
-# Dicionário de traduções (Gancho incluído!)
-textos = {
-    "Português": {"titulo": "🎬 Geny: Roteiros Inteligentes", "sub": "Crie roteiros que vendem em segundos!", "btn": "🚀 Gerar Roteiro", "neg": "Qual o seu negócio?", "pro": "O que quer vender?"},
-    "English": {"titulo": "🎬 Geny: Smart Scripts", "sub": "Create scripts that sell in seconds!", "btn": "🚀 Generate Script", "neg": "Your business?", "pro": "What to sell?"},
-    "Español": {"titulo": "🎬 Geny: Guiones Inteligentes", "sub": "¡Crea guiones que venden en segundos!", "btn": "🚀 Generar Guion", "neg": "Tu negocio:", "pro": "¿Qué vender?"}
+# Dicionário de traduções e Tons
+tons = {
+    "Português": ["Engraçado", "Sério/Profissional", "Explicativo/Tutorial", "Urgente/Promoção", "Storytelling (Contar História)", "Curiosidades"],
+    "English": ["Funny", "Professional", "Explainer/Tutorial", "Urgent/Sale", "Storytelling", "Fun Facts"],
+    "Español": ["Divertido", "Profesional", "Explicativo", "Urgente/Oferta", "Storytelling", "Curiosidades"]
 }
-t = textos[idioma]
 
+textos = {
+    "Português": {"titulo": "🎬 Geny: Roteiros Inteligentes", "sub": "Crie roteiros que vendem em segundos!", "btn": "🚀 Gerar Roteiro", "neg": "Qual o seu negócio?", "pro": "O que quer vender?", "est": "Tom do Roteiro:"},
+    "English": {"titulo": "🎬 Geny: Smart Scripts", "sub": "Create scripts that sell in seconds!", "btn": "🚀 Generate Script", "neg": "Your business?", "pro": "What to sell?", "est": "Script Tone:"},
+    "Español": {"titulo": "🎬 Geny: Guiones Inteligentes", "sub": "¡Crea guiones que venden en segundos!", "btn": "🚀 Generar Guion", "neg": "Tu negocio:", "pro": "¿Qué vender?", "est": "Tono del guion:"}
+}
+
+t = textos[idioma]
 st.title(t["titulo"])
 
-# Lógica de Login
 if senha_acesso:
     autorizado, mensagem = verificar_acesso(senha_acesso)
     
     if autorizado:
-        st.subheader(t["sub"]) # O GANCHO VOLTOU!
+        st.subheader(t["sub"])
         
         if "API_KEY" in st.secrets:
             genai.configure(api_key=st.secrets["API_KEY"])
             model = genai.GenerativeModel('gemini-2.5-flash')
 
-            negocio = st.text_input(t["neg"], placeholder="Ex: Doceria Dona Geny")
-            produto = st.text_input(t["pro"])
+            # CAMPOS DO FORMULÁRIO
+            col1, col2 = st.columns(2)
+            with col1:
+                negocio = st.text_input(t["neg"], placeholder="Ex: Oficina do Zé")
+            with col2:
+                produto = st.text_input(t["pro"], placeholder="Ex: Troca de Óleo")
             
+            estilo = st.selectbox(t["est"], tons[idioma]) # OS TONS VOLTARAM!
+
             if st.button(t["btn"]):
                 if negocio and produto:
-                    prompt = f"Write a 15s social media script in {idioma} for {negocio} about {produto}. Format: Scene, Speech, Caption."
+                    prompt = (
+                        f"Atue como um roteirista experiente. Crie um roteiro de 15 a 30 segundos para redes sociais no idioma {idioma}. "
+                        f"Negócio: {negocio}. Produto/Serviço: {produto}. Tom de voz: {estilo}. "
+                        f"Formate com: 1. Cena (O que mostrar), 2. Áudio (O que falar), 3. Legenda Sugerida."
+                    )
                     with st.spinner("IA criando..."):
                         response = model.generate_content(prompt)
                         st.divider()
                         st.markdown(response.text)
         else:
-            st.error("Chave API não configurada nos Secrets.")
-            
+            st.error("Erro: Chave API não configurada.")
     elif mensagem == "bloqueado":
         st.error("Sua assinatura está suspensa.")
     elif mensagem == "invalido":
         st.warning("Senha incorreta.")
-    else:
-        st.error(f"Erro: {mensagem}")
 else:
     st.info("👈 Insira sua senha na barra lateral para liberar o acesso.")
