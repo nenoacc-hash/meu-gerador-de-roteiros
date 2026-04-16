@@ -4,7 +4,7 @@ import google.generativeai as genai
 # Configuração da página
 st.set_page_config(page_title="Gerador de Roteiros", page_icon="🎬")
 
-st.title("🎬 Gerador de Roteiros Dona Geny")
+st.title("🎬 Geny: Roteiros Inteligentes")
 st.subheader("Crie vídeos que vendem em segundos!")
 
 # Barra lateral
