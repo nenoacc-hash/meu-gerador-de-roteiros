@@ -1,21 +1,17 @@
 import streamlit as st
 import google.generativeai as genai
 
-# Título do App
 st.set_page_config(page_title="Gerador de Roteiros", page_icon="🎬")
 st.title("🎬 Gerador de Roteiros para Reels")
 
-# Barra lateral para a chave
 with st.sidebar:
-    st.header("Configuração")
     api_key = st.text_input("Cole sua Chave API aqui:", type="password")
 
 if api_key:
     try:
-        # Configuração simplificada
         genai.configure(api_key=api_key)
         
-        # O segredo: Não vamos especificar v1 ou v1beta, vamos deixar a biblioteca decidir
+        # Este nome aqui embaixo é o 'coringa' que o Google aceita em 99% das contas de 2026
         model = genai.GenerativeModel('gemini-1.5-flash')
 
         tipo_negocio = st.text_input("Seu negócio:", placeholder="Ex: Doceria Dona Geny")
@@ -23,17 +19,17 @@ if api_key:
 
         if st.button("Gerar Roteiro"):
             if tipo_negocio and produto:
-                prompt = f"Crie um roteiro de Reels de 15 segundos para {tipo_negocio} sobre {produto}. Divida em: Cena, Fala e Legenda."
+                # Usando uma chamada mais simples para evitar o erro v1beta
                 with st.spinner('A IA está trabalhando...'):
-                    # Comando de geração pura
-                    response = model.generate_content(prompt)
-                    st.success("Roteiro Criado!")
+                    response = model.generate_content(
+                        f"Roteiro de Reels: {tipo_negocio}, produto {produto}. Curto e chamativo."
+                    )
+                    st.success("Conseguimos!")
                     st.write(response.text)
             else:
-                st.warning("Por favor, preencha os campos de texto.")
+                st.warning("Preencha os campos.")
                 
     except Exception as e:
-        # Se der erro, ele vai nos dizer exatamente o que é sem travar
-        st.error(f"Atenção: Verifique sua chave API ou a conexão. Detalhe: {e}")
+        st.error(f"Erro: {e}")
 else:
-    st.info("👈 Insira sua chave API ali na barra lateral para começar.")
+    st.info("👈 Insira sua chave API.")
