@@ -59,10 +59,10 @@ textos = {
     },
     "Español": {
         "titulo": "🎬 Geny: Guiones Inteligentes",
-        "sub": "¡Crea guiones que venden en segundos!",
+        "sub": "Crea guiones que venden en segundos!",
         "btn": "🚀 Generar Guion",
         "neg": "Tu negocio:",
-        "pro": "¿Qué quieres vender?",
+        "pro": "Qué quieres vender?",
         "est": "Tono del guion:",
         "ex_neg": "Ej: Pastelería de Juana",
         "ex_pro": "Ej: Tarta de Chocolate",
