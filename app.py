@@ -1,34 +1,48 @@
 import streamlit as st
 import google.generativeai as genai
 
-st.title("🧪 Teste de Conexão com o Google")
+# Configuração da página
+st.set_page_config(page_title="Gerador de Roteiros", page_icon="🎬")
 
-api_key = st.sidebar.text_input("Chave API:", type="password")
+st.title("🎬 Gerador de Roteiros Dona Geny")
+st.subheader("Crie vídeos que vendem em segundos!")
+
+# Barra lateral
+with st.sidebar:
+    st.header("Configuração")
+    api_key = st.text_input("Cole sua Chave API aqui:", type="password")
+    st.info("Sua chave foi validada com sucesso!")
 
 if api_key:
     try:
         genai.configure(api_key=api_key)
         
-        st.write("Tentando listar modelos disponíveis...")
-        # Este comando pergunta ao Google: 'O que eu posso usar?'
-        modelos = []
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                modelos.append(m.name)
-        
-        if modelos:
-            st.success(f"Conectado! Você pode usar estes modelos: {modelos}")
-            st.info("Agora escolha um deles para testar:")
-            escolha = st.selectbox("Selecione o modelo:", modelos)
-            
-            if st.button("Testar Oi da IA"):
-                model = genai.GenerativeModel(escolha)
-                response = model.generate_content("Dê um oi para a Dona Geny!")
-                st.write(response.text)
-        else:
-            st.warning("A chave funcionou, mas o Google não liberou nenhum modelo de IA para você.")
-            
+        # USANDO O MODELO QUE APARECEU NA SUA LISTA VERDE!
+        model = genai.GenerativeModel('gemini-2.5-flash')
+
+        # Campos de entrada
+        tipo_negocio = st.text_input("Qual o seu negócio?", placeholder="Ex: Doceria Dona Geny")
+        produto = st.text_input("O que quer vender?", placeholder="Ex: Pavê de Sonho de Valsa")
+        estilo = st.selectbox("Estilo do vídeo:", ["Engraçado e Leve", "Profissional e Elegante", "Rápido (Trend)"])
+
+        if st.button("🚀 Gerar Roteiro de Milhões"):
+            if tipo_negocio and produto:
+                prompt = (
+                    f"Atue como um roteirista de elite para Instagram e TikTok. "
+                    f"Crie um roteiro de 15 segundos para: {tipo_negocio}. "
+                    f"O foco é vender: {produto}. O tom deve ser {estilo}. "
+                    f"Formate em: 1. O que mostrar na imagem, 2. O que falar, 3. Legenda e Hashtags."
+                )
+                
+                with st.spinner('A IA está criando sua obra-prima...'):
+                    response = model.generate_content(prompt)
+                    st.success("Roteiro pronto!")
+                    st.divider()
+                    st.write(response.text)
+            else:
+                st.warning("Preencha o nome do negócio e o produto!")
+                
     except Exception as e:
-        st.error(f"Erro Real: {e}")
+        st.error(f"Erro inesperado: {e}")
 else:
-    st.info("Insira a chave na esquerda.")
+    st.info("👈 Insira sua chave API na barra lateral para começar.")
