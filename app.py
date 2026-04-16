@@ -33,7 +33,7 @@ textos = {
         "titulo": "🎬 Geny: Guiones Inteligentes",
         "subtitulo": "¡Crea guiones que venden em segundos!",
         "label_negocio": "Tu negocio:",
-        "label_produto": "¿Qué quieres vender?",
+        "label_produto": "Qué quieres vender?",
         "label_estilo": "Estilo del video:",
         "botao": "🚀 Generar Guion",
         "placeholder_negocio": "Ej: Pastelería, Cafetería",
