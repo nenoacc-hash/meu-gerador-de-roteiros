@@ -4,40 +4,64 @@ import google.generativeai as genai
 # Configuração da página
 st.set_page_config(page_title="Geny: Roteiros Inteligentes", page_icon="🎬")
 
-# Título e Idioma
+# Barra lateral para Idioma
 idioma = st.sidebar.selectbox("🌐 Idioma / Language", ["Português", "English", "Español"])
 
-titulos = {
-    "Português": "🎬 Geny: Roteiros Inteligentes",
-    "English": "🎬 Geny: Smart Scripts",
-    "Español": "🎬 Geny: Guiones Inteligentes"
+# Dicionário de traduções para a interface
+textos = {
+    "Português": {
+        "titulo": "🎬 Geny: Roteiros Inteligentes",
+        "subtitulo": "Crie roteiros que vendem em segundos!",
+        "label_negocio": "Qual o seu negócio?",
+        "label_produto": "O que quer vender?",
+        "label_estilo": "Estilo do vídeo:",
+        "botao": "🚀 Gerar Roteiro",
+        "placeholder_negocio": "Ex: Doceria Dona Geny",
+        "spinner": "A IA está criando sua obra-prima..."
+    },
+    "English": {
+        "titulo": "🎬 Geny: Smart Scripts",
+        "subtitulo": "Create scripts that sell in seconds!",
+        "label_negocio": "What is your business?",
+        "label_produto": "What do you want to sell?",
+        "label_estilo": "Video style:",
+        "botao": "🚀 Generate Script",
+        "placeholder_negocio": "Ex: Bakery, Coffee Shop",
+        "spinner": "The AI is creating your masterpiece..."
+    },
+    "Español": {
+        "titulo": "🎬 Geny: Guiones Inteligentes",
+        "subtitulo": "¡Crea guiones que venden em segundos!",
+        "label_negocio": "Tu negocio:",
+        "label_produto": "¿Qué quieres vender?",
+        "label_estilo": "Estilo del video:",
+        "botao": "🚀 Generar Guion",
+        "placeholder_negocio": "Ej: Pastelería, Cafetería",
+        "spinner": "A IA está criando tu obra maestra..."
+    }
 }
 
-st.title(titulos[idioma])
+t = textos[idioma]
 
-# PUXANDO A CHAVE DAS CONFIGURAÇÕES SECRETAS
-# Você vai configurar isso no painel do Streamlit (explico abaixo)
+st.title(t["titulo"])
+st.subheader(t["subtitulo"]) # O GANCHO VOLTOU AQUI!
+
 if "API_KEY" in st.secrets:
-    api_key = st.secrets["API_KEY"]
-    genai.configure(api_key=api_key)
+    genai.configure(api_key=st.secrets["API_KEY"])
     model = genai.GenerativeModel('gemini-2.5-flash')
 
-    # Textos por idioma
-    labels = {
-        "Português": ["Qual o seu negócio?", "O que quer vender?", "Estilo:", "Gerar Roteiro"],
-        "English": ["Your business?", "What to sell?", "Style:", "Generate Script"],
-        "Español": ["¿Tu negocio?", "¿Qué vender?", "Estilo:", "Generar Guion"]
-    }
+    negocio = st.text_input(t["label_negocio"], placeholder=t["placeholder_negocio"])
+    produto = st.text_input(t["label_produto"])
+    estilo = st.selectbox(t["label_estilo"], ["Engraçado", "Profissional", "Trend"])
 
-    negocio = st.text_input(labels[idioma][0])
-    produto = st.text_input(labels[idioma][1])
-    estilo = st.selectbox(labels[idioma][2], ["Engraçado", "Profissional", "Trend"])
-
-    if st.button(labels[idioma][3]):
+    if st.button(t["botao"]):
         if negocio and produto:
-            prompt = f"Write a 15s social media script in {idioma} for {negocio} selling {produto}. Tone: {estilo}. Format: Scene, Speech, Caption."
-            with st.spinner('...'):
+            prompt = f"Write a 15s social media script in {idioma} for {negocio} about {produto}. Tone: {estilo}. Format: Scene, Speech, Caption."
+            with st.spinner(t["spinner"]):
                 response = model.generate_content(prompt)
+                st.divider()
                 st.markdown(response.text)
+        else:
+            st.warning("Preencha todos os campos!")
 else:
     st.error("Erro: Chave API não configurada nos Segredos do Streamlit.")
