@@ -9,7 +9,7 @@ st.set_page_config(page_title="Geny: Roteiros Inteligentes", page_icon="🎬")
 SHEET_ID = "1uB2n6wPK8K5aC_6RUKB27M_vn2u7o9thYt1JcEZMbKI"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
 
-# Função de Acesso
+# Função de Acesso - Lê a planilha e confere a senha
 def verificar_acesso(senha_digitada):
     try:
         df = pd.read_csv(SHEET_URL)
@@ -43,7 +43,10 @@ textos = {
         "ex_neg": "Ex: Doceria Dona Geny",
         "ex_pro": "Ex: Pavê de Sonho de Valsa",
         "tons": ["Engraçado", "Sério/Profissional", "Explicativo/Tutorial", "Urgente/Promoção", "Storytelling", "Curiosidades"],
-        "aviso_erro": "Preencha todos os campos!"
+        "aviso_erro": "Preencha todos os campos!",
+        "ass_susp": "Assinatura Suspensa",
+        "senha_inc": "Senha Incorreta",
+        "msg_login": "👈 Insira sua senha na barra lateral."
     },
     "English": {
         "titulo": "🎬 Geny: Smart Scripts",
@@ -55,25 +58,32 @@ textos = {
         "ex_neg": "Ex: Joe's Bakery",
         "ex_pro": "Ex: Chocolate Cake",
         "tons": ["Funny", "Professional", "Tutorial/Explainer", "Urgent/Sale", "Storytelling", "Fun Facts"],
-        "aviso_erro": "Please fill in all fields!"
+        "aviso_erro": "Please fill in all fields!",
+        "ass_susp": "Subscription Suspended",
+        "senha_inc": "Incorrect Password",
+        "msg_login": "👈 Enter your password on the sidebar."
     },
     "Español": {
         "titulo": "🎬 Geny: Guiones Inteligentes",
-        "sub": "Crea guiones que venden en segundos!",
+        "sub": "¡Crea guiones que venden en segundos!",
         "btn": "🚀 Generar Guion",
         "neg": "Tu negocio:",
-        "pro": "Qué quieres vender?",
+        "pro": "¿Qué quieres vender?",
         "est": "Tono del guion:",
         "ex_neg": "Ej: Pastelería de Juana",
         "ex_pro": "Ej: Tarta de Chocolate",
         "tons": ["Divertido", "Profesional", "Explicativo", "Urgente/Oferta", "Storytelling", "Curiosidades"],
-        "aviso_erro": "¡Por favor, complete todos los campos!"
+        "aviso_erro": "¡Por favor, complete todos os campos!",
+        "ass_susp": "Suscripción Suspendida",
+        "senha_inc": "Contraseña Incorrecta",
+        "msg_login": "👈 Ingrese su contraseña en la barra lateral."
     }
 }
 
 t = textos[idioma]
 st.title(t["titulo"])
 
+# Lógica de Login
 if senha_acesso:
     autorizado, mensagem = verificar_acesso(senha_acesso)
     
@@ -84,23 +94,25 @@ if senha_acesso:
             genai.configure(api_key=st.secrets["API_KEY"])
             model = genai.GenerativeModel('gemini-2.5-flash')
 
-            # CAMPOS COM TRADUÇÃO AUTOMÁTICA
             col1, col2 = st.columns(2)
             with col1:
                 negocio = st.text_input(t["neg"], placeholder=t["ex_neg"])
             with col2:
                 produto = st.text_input(t["pro"], placeholder=t["ex_pro"])
             
-            # MENU DE TONS TRADUZIDO
             estilo = st.selectbox(t["est"], t["tons"])
 
             if st.button(t["btn"]):
                 if negocio and produto:
+                    # PROMPT BLINDADO PARA IDIOMAS
                     prompt = (
-                        f"Atue como um roteirista experiente. Crie um roteiro de 15 a 30 segundos para redes sociais no idioma {idioma}. "
-                        f"Negócio: {negocio}. Produto/Serviço: {produto}. Tom de voz: {estilo}. "
-                        f"Formate com: 1. Cena (O que mostrar), 2. Áudio (O que falar), 3. Legenda Sugerida."
+                        f"IMPORTANT: You MUST write the entire response in {idioma}. "
+                        f"Atue como um roteirista de elite. Crie um roteiro de rede social para: {negocio}. "
+                        f"Produto: {produto}. Tom: {estilo}. "
+                        f"Traduza tudo para {idioma} e use o formato: "
+                        f"1. Cena, 2. Áudio, 3. Legenda e Hashtags."
                     )
+                    
                     with st.spinner("..."):
                         response = model.generate_content(prompt)
                         st.divider()
@@ -109,9 +121,12 @@ if senha_acesso:
                     st.warning(t["aviso_erro"])
         else:
             st.error("Erro: API KEY")
+            
     elif mensagem == "bloqueado":
-        st.error("Assinatura Suspensa / Subscription Suspended")
+        st.error(t["ass_susp"])
     elif mensagem == "invalido":
-        st.warning("Senha Incorreta / Incorrect Password")
+        st.warning(t["senha_inc"])
+    else:
+        st.error(f"Erro: {mensagem}")
 else:
-    st.info("👈 Login na barra lateral / Login on the sidebar.")
+    st.info(t["msg_login"])
