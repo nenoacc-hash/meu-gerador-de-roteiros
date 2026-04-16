@@ -1,67 +1,79 @@
 import streamlit as st
 import google.generativeai as genai
+import pandas as pd
 
 # Configuração da página
 st.set_page_config(page_title="Geny: Roteiros Inteligentes", page_icon="🎬")
 
-# Barra lateral para Idioma
-idioma = st.sidebar.selectbox("🌐 Idioma / Language", ["Português", "English", "Español"])
+# Link da sua planilha formatado para exportação CSV
+SHEET_ID = "1uB2n6wPK8K5aC_6RUKB27M_vn2u7o9thYt1JcEZMbKI"
+SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
 
-# Dicionário de traduções para a interface
+# Função para verificar acesso
+def verificar_acesso(senha_digitada):
+    try:
+        df = pd.read_csv(SHEET_URL)
+        # Limpar espaços em branco dos dados
+        df['senha'] = df['senha'].astype(str).str.strip()
+        df['status'] = df['status'].astype(str).str.strip().lower()
+        
+        # Procura a senha na planilha
+        usuario = df[df['senha'] == senha_digitada]
+        
+        if not usuario.empty:
+            if usuario.iloc[0]['status'] == 'ativo':
+                return True, "sucesso"
+            else:
+                return False, "bloqueado"
+        return False, "invalido"
+    except Exception as e:
+        return False, f"erro: {e}"
+
+# Barra lateral para Idioma e Login
+with st.sidebar:
+    st.title("🔑 Acesso")
+    idioma = st.selectbox("🌐 Idioma", ["Português", "English", "Español"])
+    senha_acesso = st.text_input("Senha de Acesso:", type="password")
+
+# Dicionário de traduções
 textos = {
-    "Português": {
-        "titulo": "🎬 Geny: Roteiros Inteligentes",
-        "subtitulo": "Crie roteiros que vendem em segundos!",
-        "label_negocio": "Qual o seu negócio?",
-        "label_produto": "O que quer vender?",
-        "label_estilo": "Estilo do vídeo:",
-        "botao": "🚀 Gerar Roteiro",
-        "placeholder_negocio": "Ex: Doceria Dona Geny",
-        "spinner": "A IA está criando sua obra-prima..."
-    },
-    "English": {
-        "titulo": "🎬 Geny: Smart Scripts",
-        "subtitulo": "Create scripts that sell in seconds!",
-        "label_negocio": "What is your business?",
-        "label_produto": "What do you want to sell?",
-        "label_estilo": "Video style:",
-        "botao": "🚀 Generate Script",
-        "placeholder_negocio": "Ex: Bakery, Coffee Shop",
-        "spinner": "The AI is creating your masterpiece..."
-    },
-    "Español": {
-        "titulo": "🎬 Geny: Guiones Inteligentes",
-        "subtitulo": "Crea guiones que venden em segundos!",
-        "label_negocio": "Tu negocio:",
-        "label_produto": "Qué quieres vender?",
-        "label_estilo": "Estilo del video:",
-        "botao": "🚀 Generar Guion",
-        "placeholder_negocio": "Ej: Pastelería, Cafetería",
-        "spinner": "A IA está criando tu obra maestra..."
-    }
+    "Português": {"titulo": "🎬 Geny: Roteiros Inteligentes", "sub": "Crie roteiros que vendem!", "btn": "🚀 Gerar Roteiro"},
+    "English": {"titulo": "🎬 Geny: Smart Scripts", "sub": "Create scripts that sell!", "btn": "🚀 Generate Script"},
+    "Español": {"titulo": "🎬 Geny: Guiones Inteligentes", "sub": "¡Guiones que venden!", "btn": "🚀 Generar Guion"}
 }
-
 t = textos[idioma]
 
 st.title(t["titulo"])
-st.subheader(t["subtitulo"]) # O GANCHO VOLTOU AQUI!
 
-if "API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["API_KEY"])
-    model = genai.GenerativeModel('gemini-2.5-flash')
+# LÓGICA DE ACESSO
+if senha_acesso:
+    autorizado, mensagem = verificar_acesso(senha_acesso)
+    
+    if autorizado:
+        st.subheader(t["sub"])
+        
+        if "API_KEY" in st.secrets:
+            genai.configure(api_key=st.secrets["API_KEY"])
+            model = genai.GenerativeModel('gemini-2.5-flash')
 
-    negocio = st.text_input(t["label_negocio"], placeholder=t["placeholder_negocio"])
-    produto = st.text_input(t["label_produto"])
-    estilo = st.selectbox(t["label_estilo"], ["Engraçado", "Profissional", "Trend"])
-
-    if st.button(t["botao"]):
-        if negocio and produto:
-            prompt = f"Write a 15s social media script in {idioma} for {negocio} about {produto}. Tone: {estilo}. Format: Scene, Speech, Caption."
-            with st.spinner(t["spinner"]):
-                response = model.generate_content(prompt)
-                st.divider()
-                st.markdown(response.text)
+            negocio = st.text_input("Negócio / Business:")
+            produto = st.text_input("Produto / Product:")
+            
+            if st.button(t["btn"]):
+                if negocio and produto:
+                    prompt = f"Write a 15s social media script in {idioma} for {negocio} about {produto}. Format: Scene, Speech, Caption."
+                    with st.spinner("..."):
+                        response = model.generate_content(prompt)
+                        st.divider()
+                        st.markdown(response.text)
         else:
-            st.warning("Preencha todos os campos!")
+            st.error("Erro técnico: Chave API não configurada.")
+            
+    elif mensagem == "bloqueado":
+        st.error("Sua assinatura está suspensa. Entre em contato com o suporte.")
+    elif mensagem == "invalido":
+        st.warning("Senha incorreta. Verifique os dados.")
+    else:
+        st.error(f"Erro ao conectar com banco de dados: {mensagem}")
 else:
-    st.error("Erro: Chave API não configurada nos Segredos do Streamlit.")
+    st.info("👈 Por favor, insira sua senha de acesso na barra lateral.")
