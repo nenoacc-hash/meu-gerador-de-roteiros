@@ -91,7 +91,7 @@ if senha_acesso:
         
         if "API_KEY" in st.secrets:
             genai.configure(api_key=st.secrets["API_KEY"])
-            model = genai.GenerativeModel('gemini-2.5-flash')
+            model = genai.GenerativeModel('gemini-1.5-flash')
 
             col1, col2 = st.columns(2)
             with col1:
