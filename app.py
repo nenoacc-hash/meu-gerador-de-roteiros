@@ -3,7 +3,7 @@ import google.generativeai as genai
 import pandas as pd
 
 # Configuração da página
-st.set_page_config(page_title="Geny: Roteiros Inteligentes", page_icon="🎬")
+st.set_page_config(page_title="GENY.AI: Roteiros Inteligentes", page_icon="🎬")
 
 # Link da sua planilha
 SHEET_ID = "1uB2n6wPK8K5aC_6RUKB27M_vn2u7o9thYt1JcEZMbKI"
