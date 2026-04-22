@@ -34,7 +34,7 @@ with st.sidebar:
 # DICIONÁRIO COMPLETO (Agora com Plataformas!)
 textos = {
     "Português": {
-        "titulo": "🎬 Geny: Roteiros Inteligentes",
+        "titulo": "🎬 GENY.AI: Roteiros Inteligentes",
         "sub": "Crie roteiros que vendem em segundos!",
         "btn": "🚀 Gerar Roteiro",
         "neg": "Qual o seu negócio?",
@@ -49,7 +49,7 @@ textos = {
         "msg_login": "👈 Insira sua senha na barra lateral."
     },
     "English": {
-        "titulo": "🎬 Geny: Smart Scripts",
+        "titulo": "🎬 GENY.AI: Smart Scripts",
         "sub": "Create scripts that sell in seconds!",
         "btn": "🚀 Generate Script",
         "neg": "What is your business?",
@@ -64,7 +64,7 @@ textos = {
         "msg_login": "👈 Enter your password on the sidebar."
     },
     "Español": {
-        "titulo": "🎬 Geny: Guiones Inteligentes",
+        "titulo": "🎬 GENY.AI: Guiones Inteligentes",
         "sub": "Crea guiones que venden en segundos!",
         "btn": "🚀 Generar Guion",
         "neg": "Tu negocio:",
