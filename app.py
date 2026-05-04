@@ -74,7 +74,8 @@ if senha_acesso:
         st.subheader(t["sub"])
         if "API_KEY" in st.secrets:
             genai.configure(api_key=st.secrets["API_KEY"])
-            model = genai.GenerativeModel('gemini-1.5-flash') # Modelo estável e rápido para 2026
+            # ESTA É A LINHA QUE FUNCIONA EM MAIO DE 2026:
+            model = genai.GenerativeModel('gemini-2.0-flash')
 
             col1, col2 = st.columns(2)
             with col1: negocio = st.text_input(t["neg"], placeholder=t["ex_neg"])
