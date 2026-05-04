@@ -1,41 +1,33 @@
 import streamlit as st
 import google.generativeai as genai
 import pandas as pd
-import time
+import random
 
-# Configuração da página
+# 1. CONFIGURAÇÃO DA PÁGINA
 st.set_page_config(page_title="GENY.AI: Roteiros Inteligentes", page_icon="🎬")
 
-# ID exato da sua planilha que você mandou agora
+# ID exato da sua planilha
 SHEET_ID = "1-_7_95rP5k0n19NWY5cw-CpFYK8hHuw3I7e11_eUdGY"
-
-# Link de exportação com uma trava para o Google não mandar versão velha
-import random
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&v={random.randint(1, 99999)}"
 
 def verificar_acesso(senha_digitada):
     try:
-        # Forçamos o pandas a ler sem usar cache do sistema
         df = pd.read_csv(SHEET_URL)
         df.columns = [str(c).strip().lower() for c in df.columns]
-        
         senha_limpa = str(senha_digitada).strip()
         
         for index, row in df.iterrows():
-            # Verificamos se a senha bate
             if str(row['senha']).strip() == senha_limpa:
                 status_venda = str(row['status']).strip().lower()
-                # Agora aceita 'pago' ou 'ativo'
                 if status_venda in ['pago', 'ativo']:
                     return True, "sucesso"
                 else:
                     return False, "bloqueado"
         return False, "invalido"
     except Exception as e:
-        # Se der erro, ele vai te mostrar o que é
         return False, f"erro: {e}"
 
-# Barra lateral
+# 2. BARRA LATERAL
 with st.sidebar:
     st.title("🔑 Acesso / Access")
     idioma = st.selectbox("🌐 Idioma", ["Português", "English", "Español"])
@@ -43,7 +35,7 @@ with st.sidebar:
     if st.button("🔄 Atualizar / Refresh"):
         st.rerun()
 
-# DICIONÁRIO (Mantido conforme seu original)
+# 3. DICIONÁRIO DE TEXTOS
 textos = {
     "Português": {
         "titulo": "🎬 GENY.AI: Roteiros Inteligentes",
@@ -67,15 +59,20 @@ textos = {
 t = textos[idioma]
 st.title(t["titulo"])
 
+# 4. LÓGICA PRINCIPAL
 if senha_acesso:
     autorizado, mensagem = verificar_acesso(senha_acesso)
     
     if autorizado:
         st.subheader(t["sub"])
-        if "API_KEY" in st.secrets:
-            genai.configure(api_key=st.secrets["API_KEY"])
-            # ESTA É A LINHA QUE FUNCIONA EM MAIO DE 2026:
-            model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
+        
+        # AJUSTE DA API_KEY (FORÇADO E ROBUSTO)
+        api_key = st.secrets.get("API_KEY")
+        
+        if api_key:
+            genai.configure(api_key=api_key)
+            # USANDO O MODELO PADRÃO MAIS ESTÁVEL PARA 2026
+            model = genai.GenerativeModel('gemini-1.5-flash')
 
             col1, col2 = st.columns(2)
             with col1: negocio = st.text_input(t["neg"], placeholder=t["ex_neg"])
@@ -91,14 +88,17 @@ if senha_acesso:
                               f"Crie um roteiro de 15 a 30 segundos para o negócio {negocio}. "
                               f"Produto: {produto}. Tom: {estilo}. "
                               f"Formato: 1. Cena, 2. Áudio, 3. Legenda e Hashtags.")
-                    with st.spinner("Gerando roteiro de elite..."):
-                        response = model.generate_content(prompt)
-                        st.divider()
-                        st.markdown(response.text)
+                    try:
+                        with st.spinner("Gerando roteiro de elite..."):
+                            response = model.generate_content(prompt)
+                            st.divider()
+                            st.markdown(response.text)
+                    except Exception as e:
+                        st.error(f"Erro ao gerar conteúdo: {e}")
                 else:
                     st.warning(t["aviso_erro"])
         else:
-            st.error("Configuração de API pendente.")
+            st.error("Configuração de API pendente nos Secrets.")
     elif mensagem == "bloqueado":
         st.error("Acesso Suspenso (Verifique sua assinatura)")
     elif mensagem == "invalido":
