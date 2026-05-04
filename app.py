@@ -71,8 +71,8 @@ if senha_acesso:
         
         if api_key:
             genai.configure(api_key=api_key)
-            # USANDO O MODELO PADRÃO MAIS ESTÁVEL PARA 2026
-            model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
+            # Este é o nome que a versão estável do Google reconhece agora:
+            model = genai.GenerativeModel('gemini-1.5-flash')
             
             col1, col2 = st.columns(2)
             with col1: negocio = st.text_input(t["neg"], placeholder=t["ex_neg"])
