@@ -6,33 +6,34 @@ import time
 # Configuração da página
 st.set_page_config(page_title="GENY.AI: Roteiros Inteligentes", page_icon="🎬")
 
-# ID DA PLANILHA (Verificado conforme seu print mais recente)
-SHEET_ID = "1-_7_95rP5k0n19NWY5cw-CpFYK8hHuw3I7e11_eUDGY"
-# Adicionamos um 'timestamp' no final para enganar o cache do Google e ler dados novos
-SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&cache={time.time()}"
+# ID exato da sua planilha que você mandou agora
+SHEET_ID = "1-_7_95rP5k0n19NWY5cw-CpFYK8hHuw3I7e11_eUdGY"
 
-# Função de Acesso
+# Link de exportação com uma trava para o Google não mandar versão velha
+import random
+SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&v={random.randint(1, 99999)}"
+
 def verificar_acesso(senha_digitada):
     try:
-        # Lendo a planilha sem cache
+        # Forçamos o pandas a ler sem usar cache do sistema
         df = pd.read_csv(SHEET_URL)
-        # Padronizando colunas (remove espaços e deixa minúsculo)
         df.columns = [str(c).strip().lower() for c in df.columns]
         
         senha_limpa = str(senha_digitada).strip()
         
         for index, row in df.iterrows():
-            # Verificamos a senha
+            # Verificamos se a senha bate
             if str(row['senha']).strip() == senha_limpa:
-                # AJUSTE CRUCIAL: Agora aceita 'pago' (que é o que o robô escreve) ou 'ativo'
                 status_venda = str(row['status']).strip().lower()
+                # Agora aceita 'pago' ou 'ativo'
                 if status_venda in ['pago', 'ativo']:
                     return True, "sucesso"
                 else:
                     return False, "bloqueado"
         return False, "invalido"
     except Exception as e:
-        return False, f"erro nos dados: {e}"
+        # Se der erro, ele vai te mostrar o que é
+        return False, f"erro: {e}"
 
 # Barra lateral
 with st.sidebar:
